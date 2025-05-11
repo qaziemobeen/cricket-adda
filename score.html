@@ -143,6 +143,7 @@
       battingTeam.textContent = batFirst.value;
     });
 
+    // Function to update score
     function updateScore(run) {
       if (isInningsComplete()) return;
       runs += run;
@@ -151,6 +152,7 @@
       updateDisplay();
     }
 
+    // Function for wicket
     function wicket() {
       if (isInningsComplete()) return;
       wickets++;
@@ -159,22 +161,26 @@
       updateDisplay();
     }
 
+    // Function for extras (Wide/No Ball)
     function extra(type) {
       runs++;
       log.push(type === 'Wide' ? 'Wd' : 'Nb');
       updateDisplay();
     }
 
+    // Function to update display with score and balls
     function updateDisplay() {
       const overs = Math.floor(balls / 6) + '.' + (balls % 6);
       document.getElementById('scoreDisplay').textContent = `${runs}/${wickets} (${overs})`;
       document.getElementById('ballLog').textContent = `Log: ${log.join(', ')}`;
     }
 
+    // Function to check if innings is complete
     function isInningsComplete() {
       return balls >= oversLimit * 6 || wickets >= tournamentData.playersPerTeam - 1;
     }
 
+    // Function to switch innings
     function switchInnings() {
       if (!isInningsComplete()) {
         alert("Complete the innings before switching.");
@@ -197,6 +203,7 @@
       updateDisplay();
     }
 
+    // Function to save match data to local storage
     function saveMatch() {
       matchSummary.push({
         innings: innings,
@@ -210,6 +217,7 @@
       alert("Match saved as " + key);
     }
 
+    // Function to reset the match data
     function resetMatch() {
       if (confirm("Reset entire match data?")) {
         innings = 1;
@@ -224,6 +232,7 @@
       }
     }
 
+    // Function to generate PDF match report
     function generatePDFReport() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
