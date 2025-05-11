@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cricket Adda - Live Scoring</title>
   <style>
     body {
@@ -22,22 +22,6 @@
       padding: 2rem;
       background: white;
     }
-    label, select, input, button {
-      display: block;
-      margin-bottom: 1rem;
-      width: 100%;
-      padding: 0.5rem;
-      border-radius: 4px;
-    }
-    button {
-      background: #1e90ff;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #0d6efd;
-    }
     .score-panel {
       margin-top: 2rem;
       border: 1px solid #ccc;
@@ -45,14 +29,21 @@
       padding: 1rem;
       background: #f9f9f9;
     }
-    .log {
-      margin-top: 1rem;
-      font-family: monospace;
-    }
     .btn-group button {
       width: auto;
       margin-right: 0.5rem;
       margin-bottom: 0.5rem;
+    }
+    button {
+      background: #1e90ff;
+      color: white;
+      border: none;
+      padding: 0.5rem;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    button:hover {
+      background: #0d6efd;
     }
   </style>
 </head>
@@ -61,22 +52,10 @@
     <h1>🏏 Cricket Adda - Live Scoring</h1>
   </header>
   <div class="main">
-    <h2>Select Match</h2>
-    <label for="matchSelect">Match:</label>
-    <select id="matchSelect"></select>
-
-    <label for="toss">Toss Won By:</label>
-    <select id="toss"></select>
-
-    <label for="batFirst">Chose to Bat First:</label>
-    <select id="batFirst"></select>
-
-    <label for="overs">Overs:</label>
-    <input type="number" id="overs" disabled />
-
+    <h2>Live Match Scoring</h2>
     <div class="score-panel">
-      <h3 id="scoreTitle">Innings 1 - <span id="battingTeam"></span> Batting</h3>
-      <p id="scoreDisplay">0/0 (0.0)</p>
+      <h3 id="scoreTitle">Innings 1</h3>
+      <p id="scoreDisplay">Score: 0/0 (0.0 overs)</p>
       <div class="btn-group">
         <button onclick="updateScore(0)">Dot</button>
         <button onclick="updateScore(1)">1</button>
@@ -90,7 +69,6 @@
       </div>
       <div class="log" id="ballLog"></div>
       <button onclick="switchInnings()">Switch Innings</button>
-      <button onclick="saveMatch()">Save Match</button>
       <button onclick="resetMatch()">Reset Match</button>
       <button onclick="generatePDFReport()">Generate Match Report</button>
     </div>
@@ -99,7 +77,6 @@
     <p>&copy; 2025 Cricket Adda</p>
   </footer>
 
-  <!-- Include jsPDF library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <script>
@@ -107,45 +84,12 @@
     let runs = 0;
     let wickets = 0;
     let balls = 0;
-    let oversLimit = 0;
     let log = [];
-    let matchSummary = [];
-
-    const tournamentData = JSON.parse(localStorage.getItem('cricketAddaTournament'));
-    const matchSelect = document.getElementById('matchSelect');
-    const toss = document.getElementById('toss');
-    const batFirst = document.getElementById('batFirst');
-    const battingTeam = document.getElementById('battingTeam');
-
-    if (tournamentData) {
-      tournamentData.teams.forEach((teamA, i) => {
-        for (let j = i + 1; j < tournamentData.teams.length; j++) {
-          const option = document.createElement('option');
-          const teamB = tournamentData.teams[j];
-          option.value = `${teamA} vs ${teamB}`;
-          option.textContent = `${teamA} vs ${teamB}`;
-          matchSelect.appendChild(option);
-        }
-      });
-      [toss, batFirst].forEach(select => {
-        tournamentData.teams.forEach(team => {
-          const opt = document.createElement('option');
-          opt.value = team;
-          opt.textContent = team;
-          select.appendChild(opt);
-        });
-      });
-      document.getElementById('overs').value = tournamentData.overs;
-      oversLimit = parseInt(tournamentData.overs);
-    }
-
-    matchSelect.addEventListener('change', () => {
-      battingTeam.textContent = batFirst.value;
-    });
+    let oversLimit = 6; // You can set this to a dynamic value
 
     // Function to update score
     function updateScore(run) {
-      if (isInningsComplete()) return;
+      if (balls >= oversLimit * 6 || wickets >= 10) return;
       runs += run;
       balls++;
       log.push(run);
@@ -154,7 +98,7 @@
 
     // Function for wicket
     function wicket() {
-      if (isInningsComplete()) return;
+      if (balls >= oversLimit * 6 || wickets >= 10) return;
       wickets++;
       balls++;
       log.push('W');
@@ -171,80 +115,51 @@
     // Function to update display with score and balls
     function updateDisplay() {
       const overs = Math.floor(balls / 6) + '.' + (balls % 6);
-      document.getElementById('scoreDisplay').textContent = `${runs}/${wickets} (${overs})`;
-      document.getElementById('ballLog').textContent = `Log: ${log.join(', ')}`;
-    }
-
-    // Function to check if innings is complete
-    function isInningsComplete() {
-      return balls >= oversLimit * 6 || wickets >= tournamentData.playersPerTeam - 1;
+      document.getElementById('scoreDisplay').textContent = `Score: ${runs}/${wickets} (${overs} overs)`;
+      document.getElementById('ballLog').textContent = `Ball Log: ${log.join(', ')}`;
     }
 
     // Function to switch innings
     function switchInnings() {
-      if (!isInningsComplete()) {
-        alert("Complete the innings before switching.");
+      if (balls < oversLimit * 6 && wickets < 10) {
+        alert("Complete the current innings before switching.");
         return;
       }
-      matchSummary.push({
-        innings: innings,
-        team: innings === 1 ? batFirst.value : toss.value === batFirst.value ? tournamentData.teams.find(t => t !== batFirst.value) : batFirst.value,
-        runs,
-        wickets,
-        log: [...log]
-      });
+      // Save the current innings
       innings++;
       runs = 0;
       wickets = 0;
       balls = 0;
       log = [];
-      document.getElementById('scoreTitle').textContent = `Innings ${innings} - ${innings === 2 ? (toss.value === batFirst.value ? tournamentData.teams.find(t => t !== batFirst.value) : batFirst.value) : batFirst.value} Batting`;
-      battingTeam.textContent = innings === 2 ? (toss.value === batFirst.value ? tournamentData.teams.find(t => t !== batFirst.value) : batFirst.value) : batFirst.value;
       updateDisplay();
+      document.getElementById('scoreTitle').textContent = `Innings ${innings}`;
     }
 
-    // Function to save match data to local storage
-    function saveMatch() {
-      matchSummary.push({
-        innings: innings,
-        team: battingTeam.textContent,
-        runs,
-        wickets,
-        log: [...log]
-      });
-      const key = `match_${matchSelect.value}_${Date.now()}`;
-      localStorage.setItem(key, JSON.stringify(matchSummary));
-      alert("Match saved as " + key);
-    }
-
-    // Function to reset the match data
+    // Function to reset match
     function resetMatch() {
-      if (confirm("Reset entire match data?")) {
+      if (confirm("Are you sure you want to reset the match?")) {
         innings = 1;
         runs = 0;
         wickets = 0;
         balls = 0;
         log = [];
-        matchSummary = [];
         updateDisplay();
-        document.getElementById('scoreTitle').textContent = `Innings 1 - ${batFirst.value} Batting`;
-        battingTeam.textContent = batFirst.value;
+        document.getElementById('scoreTitle').textContent = `Innings 1`;
       }
     }
 
-    // Function to generate PDF match report
+    // Function to generate PDF report
     function generatePDFReport() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
 
       doc.text("Cricket Adda - Match Report", 20, 10);
       doc.text("-------------------------------------------------", 20, 20);
-      doc.text(`Match: ${matchSelect.value}`, 20, 30);
-      doc.text(`Batting Team: ${battingTeam.textContent}`, 20, 40);
-      doc.text(`Score: ${runs}/${wickets} (${Math.floor(balls / 6)}.${balls % 6} overs)`, 20, 50);
-      doc.text(`Ball Log: ${log.join(', ')}`, 20, 60);
-
-      doc.save("Match_Report.pdf");
+      doc.text(`Innings ${innings} Summary`, 20, 30);
+      doc.text(`Score: ${runs}/${wickets} (${Math.floor(balls / 6)}.${balls % 6} overs)`, 20, 40);
+      doc.text(`Ball Log: ${log.join(', ')}`, 20, 50);
+      
+      doc.save(`Match_Report_Innings_${innings}.pdf`);
     }
   </script>
 </body>
