@@ -51,17 +51,23 @@
       transform: scale(1.03);
     }
     .team-section {
-      display: flex;
-      justify-content: space-between;
       margin-top: 1rem;
     }
     .team {
-      width: 48%;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background-color: #f9f9f9;
     }
     .player-list {
-      margin-top: 0.5rem;
+      margin-top: 1rem;
     }
     .player-input {
+      margin-bottom: 0.5rem;
+    }
+    .team-name {
+      font-weight: 700;
       margin-bottom: 0.5rem;
     }
     @keyframes fadeIn {
@@ -128,6 +134,7 @@
         teamDiv.classList.add("team");
 
         const teamNameLabel = document.createElement("label");
+        teamNameLabel.classList.add("team-name");
         teamNameLabel.textContent = `Team ${i + 1} Name:`;
         teamDiv.appendChild(teamNameLabel);
 
