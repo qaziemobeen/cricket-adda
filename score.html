@@ -29,18 +29,40 @@
       padding: 1rem;
       background: #f9f9f9;
     }
-    .btn-group button {
-      width: auto;
-      margin-right: 0.5rem;
-      margin-bottom: 0.5rem;
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
     }
-    button {
+    .btn-group button {
+      padding: 0.5rem 1rem;
       background: #1e90ff;
       color: white;
       border: none;
-      padding: 0.5rem;
       cursor: pointer;
       font-size: 1rem;
+      border-radius: 5px;
+    }
+    .btn-group button:hover {
+      background: #0d6efd;
+    }
+    #scoreDisplay {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .log {
+      margin-top: 1rem;
+      font-size: 1rem;
+    }
+    button {
+      padding: 0.5rem;
+      font-size: 1rem;
+      background: #1e90ff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
     }
     button:hover {
       background: #0d6efd;
