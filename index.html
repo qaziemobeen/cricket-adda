@@ -2,149 +2,158 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Cricket Adda - Tournament Setup</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 0;
-      background: #f0f0f0;
+      background: #f8f9fa;
     }
     header, footer {
-      background: #1e90ff;
+      background: #007bff;
       color: white;
-      text-align: center;
       padding: 1rem;
+      text-align: center;
     }
     .main {
       max-width: 800px;
       margin: auto;
-      padding: 2rem;
+      padding: 1rem;
       background: white;
     }
-    label, select, input, button {
+    label, input, select, button {
       display: block;
-      margin-bottom: 1rem;
       width: 100%;
+      margin-bottom: 1rem;
       padding: 0.5rem;
       border-radius: 4px;
+      border: 1px solid #ccc;
     }
     button {
-      background: #1e90ff;
+      background-color: #007bff;
       color: white;
       border: none;
       cursor: pointer;
     }
     button:hover {
-      background: #0d6efd;
+      background-color: #0056b3;
     }
-    #scheduleDisplay ul {
-      list-style-type: none;
-      padding: 0;
+    .match {
+      background: #f1f1f1;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      border-radius: 6px;
     }
-    #scheduleDisplay li {
-      padding: 0.5rem;
-      border-bottom: 1px solid #ddd;
-    }
-    .match-actions button {
-      margin-left: 10px;
-      background: #4CAF50;
-      color: white;
+    .match h4 {
+      margin: 0 0 0.5rem 0;
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>🏏 Cricket Adda - Tournament Setup</h1>
+    <h1>🏆 Cricket Adda - Tournament Setup</h1>
   </header>
-  <div class="main">
-    <h2>Setup Tournament</h2>
 
-    <label for="tournamentName">Tournament Name:</label>
+  <div class="main">
+    <label>Tournament Name:</label>
     <input type="text" id="tournamentName" />
 
-    <label for="startDate">Start Date:</label>
+    <label>Start Date:</label>
     <input type="date" id="startDate" />
 
-    <label for="teamCount">Number of Teams:</label>
-    <input type="number" id="teamCount" min="2" max="10" />
+    <label>Overs per Match:</label>
+    <input type="number" id="overs" value="5" min="1" />
 
-    <label for="overs">Overs per Match:</label>
-    <input type="number" id="overs" min="1" />
+    <label>Number of Teams (2–10):</label>
+    <input type="number" id="teamCount" value="2" min="2" max="10" />
 
-    <label for="playersPerTeam">Players per Team (Optional):</label>
-    <input type="number" id="playersPerTeam" min="1" />
+    <button onclick="generateTeamInputs()">Next: Enter Team Names</button>
 
-    <button onclick="generateSchedule()">Generate Schedule</button>
-
-    <div id="scheduleDisplay"></div>
+    <div id="teamInputs"></div>
+    <div id="matchSchedule"></div>
   </div>
+
   <footer>
     <p>&copy; 2025 Cricket Adda</p>
   </footer>
 
   <script>
-    function generateSchedule() {
-      const tournamentName = document.getElementById('tournamentName').value;
-      const startDate = document.getElementById('startDate').value;
-      const teamCount = document.getElementById('teamCount').value;
-      const overs = document.getElementById('overs').value;
-      const playersPerTeam = document.getElementById('playersPerTeam').value;
+    function generateTeamInputs() {
+      const count = parseInt(document.getElementById('teamCount').value);
+      const container = document.getElementById('teamInputs');
+      container.innerHTML = '';
+      for (let i = 0; i < count; i++) {
+        const input = document.createElement('input');
+        input.placeholder = `Team ${i + 1} Name`;
+        input.id = `team_${i}`;
+        container.appendChild(input);
+      }
+      const btn = document.createElement('button');
+      btn.textContent = "Generate Schedule";
+      btn.onclick = generateSchedule;
+      container.appendChild(btn);
+    }
 
-      // Validate inputs
-      if (teamCount < 2 || teamCount > 10 || !overs || !startDate) {
-        alert("Please enter valid tournament details.");
+    function generateSchedule() {
+      const teamCount = parseInt(document.getElementById('teamCount').value);
+      const teams = [];
+      for (let i = 0; i < teamCount; i++) {
+        const name = document.getElementById(`team_${i}`).value.trim();
+        if (name) teams.push(name);
+      }
+      if (teams.length < 2) {
+        alert("Please enter at least 2 valid team names.");
         return;
       }
 
-      let teams = [];
-      for (let i = 1; i <= teamCount; i++) {
-        teams.push(`Team ${i}`);
-      }
+      const tournament = {
+        name: document.getElementById('tournamentName').value,
+        startDate: document.getElementById('startDate').value,
+        overs: document.getElementById('overs').value,
+        teams: teams,
+        playersPerTeam: 7,
+        matches: []
+      };
 
-      let schedule = "<h3>Tournament Schedule</h3><ul>";
-      let matches = [];
-      for (let i = 0; i < teams.length - 1; i++) {
+      // Round-robin match generation
+      for (let i = 0; i < teams.length; i++) {
         for (let j = i + 1; j < teams.length; j++) {
-          let matchId = `match_${i}_${j}`;
-          matches.push(matchId);
-          schedule += `<li>${teams[i]} vs ${teams[j]} - ${startDate} (Overs: ${overs})
-            <span class="match-actions">
-              <button onclick="startMatch('${matchId}')">Start Match</button>
-              <button onclick="resumeMatch('${matchId}')">Resume Match</button>
-            </span>
-          </li>`;
+          tournament.matches.push({
+            teamA: teams[i],
+            teamB: teams[j],
+            status: 'Not Started'
+          });
         }
       }
-      schedule += "</ul>";
 
-      // Display schedule and store tournament info
-      document.getElementById('scheduleDisplay').innerHTML = schedule;
-      localStorage.setItem('cricketAddaTournament', JSON.stringify({
-        name: tournamentName,
-        startDate,
-        teams,
-        overs,
-        playersPerTeam,
-        matches
+      // Save to localStorage
+      localStorage.setItem('cricketAddaTournament', JSON.stringify(tournament));
+
+      // Show match list
+      const matchDiv = document.getElementById('matchSchedule');
+      matchDiv.innerHTML = '<h3>Match Schedule</h3>';
+      tournament.matches.forEach((match, index) => {
+        const div = document.createElement('div');
+        div.className = 'match';
+        div.innerHTML = `
+          <h4>Match ${index + 1}: ${match.teamA} vs ${match.teamB}</h4>
+          <button onclick="startMatch('${match.teamA}', '${match.teamB}')">Start Match</button>
+        `;
+        matchDiv.appendChild(div);
+      });
+    }
+
+    function startMatch(teamA, teamB) {
+      const tournament = JSON.parse(localStorage.getItem('cricketAddaTournament'));
+      localStorage.setItem('currentMatch', JSON.stringify({
+        teamA, teamB,
+        overs: tournament.overs,
+        teams: [teamA, teamB],
+        playersPerTeam: tournament.playersPerTeam,
+        tournamentName: tournament.name
       }));
-    }
-
-    function startMatch(matchId) {
-      // Create a new match object in localStorage and redirect to live scoring
-      let matchData = { matchId, score: { teamA: 0, teamB: 0 }, status: 'inProgress' };
-      localStorage.setItem(matchId, JSON.stringify(matchData));
-      window.location.href = 'score.html?matchId=' + matchId; // Open the scoring page with matchId
-    }
-
-    function resumeMatch(matchId) {
-      // Retrieve match data and resume scoring
-      let matchData = JSON.parse(localStorage.getItem(matchId));
-      if (matchData && matchData.status === 'inProgress') {
-        window.location.href = 'score.html?matchId=' + matchId; // Open scoring page for that match
-      } else {
-        alert("Match is not in progress or has ended.");
-      }
+      window.location.href = "score.html";
     }
   </script>
 </body>
