@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Cricket Adda - Live Scoring</title>
   <style>
     body {
@@ -22,6 +22,22 @@
       padding: 2rem;
       background: white;
     }
+    label, select, input, button {
+      display: block;
+      margin-bottom: 1rem;
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 4px;
+    }
+    button {
+      background: #1e90ff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0d6efd;
+    }
     .score-panel {
       margin-top: 2rem;
       border: 1px solid #ccc;
@@ -29,43 +45,14 @@
       padding: 1rem;
       background: #f9f9f9;
     }
-    .btn-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      justify-content: center;
-    }
-    .btn-group button {
-      padding: 0.5rem 1rem;
-      background: #1e90ff;
-      color: white;
-      border: none;
-      cursor: pointer;
-      font-size: 1rem;
-      border-radius: 5px;
-    }
-    .btn-group button:hover {
-      background: #0d6efd;
-    }
-    #scoreDisplay {
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
-    }
     .log {
       margin-top: 1rem;
-      font-size: 1rem;
+      font-family: monospace;
     }
-    button {
-      padding: 0.5rem;
-      font-size: 1rem;
-      background: #1e90ff;
-      color: white;
-      border: none;
-      cursor: pointer;
-      border-radius: 5px;
-    }
-    button:hover {
-      background: #0d6efd;
+    .btn-group button {
+      width: auto;
+      margin-right: 0.5rem;
+      margin-bottom: 0.5rem;
     }
   </style>
 </head>
@@ -74,10 +61,24 @@
     <h1>🏏 Cricket Adda - Live Scoring</h1>
   </header>
   <div class="main">
-    <h2>Live Match Scoring</h2>
+    <h2>Select Match</h2>
+    <label for="matchSelect">Match:</label>
+    <select id="matchSelect"></select>
+
+    <label for="toss">Toss Won By:</label>
+    <select id="toss"></select>
+
+    <label for="batFirst">Chose to Bat First:</label>
+    <select id="batFirst"></select>
+
+    <label for="overs">Overs:</label>
+    <input type="number" id="overs" disabled />
+
     <div class="score-panel">
-      <h3 id="scoreTitle">Innings 1</h3>
-      <p id="scoreDisplay">Score: 0/0 (0.0 overs)</p>
+      <h3 id="scoreTitle">Innings 1 - <span id="battingTeam"></span> Batting</h3>
+      <p id="scoreDisplay">0/0 (0.0)</p>
+      <p id="runsRequired">Runs Required: N/A</p> <!-- Runs Required for second innings -->
+      <p id="ballsRemaining">Balls Remaining: N/A</p> <!-- Balls remaining for second innings -->
       <div class="btn-group">
         <button onclick="updateScore(0)">Dot</button>
         <button onclick="updateScore(1)">1</button>
@@ -91,97 +92,152 @@
       </div>
       <div class="log" id="ballLog"></div>
       <button onclick="switchInnings()">Switch Innings</button>
+      <button onclick="saveMatch()">Save Match</button>
       <button onclick="resetMatch()">Reset Match</button>
-      <button onclick="generatePDFReport()">Generate Match Report</button>
     </div>
   </div>
   <footer>
     <p>&copy; 2025 Cricket Adda</p>
   </footer>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
   <script>
     let innings = 1;
     let runs = 0;
     let wickets = 0;
     let balls = 0;
+    let oversLimit = 0;
     let log = [];
-    let oversLimit = 6; // You can set this to a dynamic value
+    let matchSummary = [];
+    let firstInningsRuns = 0; // Store the score of the first innings for the target
+    let targetScore = 0; // Runs required for second innings
+    let ballsRemaining = 0; // Balls remaining for second innings
 
-    // Function to update score
+    const tournamentData = JSON.parse(localStorage.getItem('cricketAddaTournament'));
+    const matchSelect = document.getElementById('matchSelect');
+    const toss = document.getElementById('toss');
+    const batFirst = document.getElementById('batFirst');
+    const battingTeam = document.getElementById('battingTeam');
+
+    if (tournamentData) {
+      tournamentData.teams.forEach((teamA, i) => {
+        for (let j = i + 1; j < tournamentData.teams.length; j++) {
+          const option = document.createElement('option');
+          const teamB = tournamentData.teams[j];
+          option.value = `${teamA} vs ${teamB}`;
+          option.textContent = `${teamA} vs ${teamB}`;
+          matchSelect.appendChild(option);
+        }
+      });
+      [toss, batFirst].forEach(select => {
+        tournamentData.teams.forEach(team => {
+          const opt = document.createElement('option');
+          opt.value = team;
+          opt.textContent = team;
+          select.appendChild(opt);
+        });
+      });
+      document.getElementById('overs').value = tournamentData.overs;
+      oversLimit = parseInt(tournamentData.overs);
+    }
+
+    matchSelect.addEventListener('change', () => {
+      battingTeam.textContent = batFirst.value;
+      resetMatch();
+    });
+
     function updateScore(run) {
-      if (balls >= oversLimit * 6 || wickets >= 10) return;
+      if (isInningsComplete()) return;
       runs += run;
       balls++;
       log.push(run);
       updateDisplay();
     }
 
-    // Function for wicket
     function wicket() {
-      if (balls >= oversLimit * 6 || wickets >= 10) return;
+      if (isInningsComplete()) return;
       wickets++;
       balls++;
       log.push('W');
       updateDisplay();
     }
 
-    // Function for extras (Wide/No Ball)
     function extra(type) {
       runs++;
       log.push(type === 'Wide' ? 'Wd' : 'Nb');
       updateDisplay();
     }
 
-    // Function to update display with score and balls
     function updateDisplay() {
       const overs = Math.floor(balls / 6) + '.' + (balls % 6);
-      document.getElementById('scoreDisplay').textContent = `Score: ${runs}/${wickets} (${overs} overs)`;
-      document.getElementById('ballLog').textContent = `Ball Log: ${log.join(', ')}`;
+      document.getElementById('scoreDisplay').textContent = `${runs}/${wickets} (${overs})`;
+      document.getElementById('ballLog').textContent = `Log: ${log.join(', ')}`;
+      if (innings === 2) {
+        const runsRequired = targetScore - runs;
+        document.getElementById('runsRequired').textContent = `Runs Required: ${runsRequired}`;
+        ballsRemaining = (oversLimit * 6) - balls;
+        document.getElementById('ballsRemaining').textContent = `Balls Remaining: ${ballsRemaining}`;
+      }
     }
 
-    // Function to switch innings
+    function isInningsComplete() {
+      return balls >= oversLimit * 6 || wickets >= tournamentData.playersPerTeam - 1;
+    }
+
     function switchInnings() {
-      if (balls < oversLimit * 6 && wickets < 10) {
-        alert("Complete the current innings before switching.");
+      if (!isInningsComplete()) {
+        alert("Complete the innings before switching.");
         return;
       }
-      // Save the current innings
+      matchSummary.push({
+        innings: innings,
+        team: innings === 1 ? batFirst.value : toss.value === batFirst.value ? tournamentData.teams.find(t => t !== batFirst.value) : batFirst.value,
+        runs,
+        wickets,
+        log: [...log]
+      });
+
+      if (innings === 1) {
+        firstInningsRuns = runs;
+        targetScore = firstInningsRuns + 1; // Set target score for second innings
+        document.getElementById('runsRequired').textContent = `Runs Required: ${targetScore}`;
+        ballsRemaining = oversLimit * 6; // Full overs for second innings
+        document.getElementById('ballsRemaining').textContent = `Balls Remaining: ${ballsRemaining}`;
+      }
+
       innings++;
       runs = 0;
       wickets = 0;
       balls = 0;
       log = [];
+      document.getElementById('scoreTitle').textContent = `Innings ${innings} - ${innings === 2 ? (toss.value === batFirst.value ? tournamentData.teams.find(t => t !== batFirst.value) : batFirst.value) : batFirst.value} Batting`;
+      battingTeam.textContent = innings === 2 ? (toss.value === batFirst.value ? tournamentData.teams.find(t => t !== batFirst.value) : batFirst.value) : batFirst.value;
       updateDisplay();
-      document.getElementById('scoreTitle').textContent = `Innings ${innings}`;
     }
 
-    // Function to reset match
+    function saveMatch() {
+      matchSummary.push({
+        innings: innings,
+        team: battingTeam.textContent,
+        runs,
+        wickets,
+        log: [...log]
+      });
+      const key = `match_${matchSelect.value}_${Date.now()}`;
+      localStorage.setItem(key, JSON.stringify(matchSummary));
+      alert("Match saved as " + key);
+    }
+
     function resetMatch() {
-      if (confirm("Are you sure you want to reset the match?")) {
-        innings = 1;
-        runs = 0;
-        wickets = 0;
-        balls = 0;
-        log = [];
-        updateDisplay();
-        document.getElementById('scoreTitle').textContent = `Innings 1`;
-      }
-    }
-
-    // Function to generate PDF report
-    function generatePDFReport() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-
-      doc.text("Cricket Adda - Match Report", 20, 10);
-      doc.text("-------------------------------------------------", 20, 20);
-      doc.text(`Innings ${innings} Summary`, 20, 30);
-      doc.text(`Score: ${runs}/${wickets} (${Math.floor(balls / 6)}.${balls % 6} overs)`, 20, 40);
-      doc.text(`Ball Log: ${log.join(', ')}`, 20, 50);
-      
-      doc.save(`Match_Report_Innings_${innings}.pdf`);
+      innings = 1;
+      runs = 0;
+      wickets = 0;
+      balls = 0;
+      log = [];
+      matchSummary = [];
+      updateDisplay();
+      document.getElementById('scoreTitle').textContent = `Innings 1 - ${batFirst.value} Batting`;
+      document.getElementById('runsRequired').textContent = `Runs Required: N/A`;
+      document.getElementById('ballsRemaining').textContent = `Balls Remaining: N/A`;
     }
   </script>
 </body>
