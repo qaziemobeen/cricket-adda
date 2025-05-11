@@ -5,7 +5,55 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Cricket Adda - Live Scoring</title>
   <style>
-    /* Same styling as before */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f0f0f0;
+    }
+    header, footer {
+      background: #1e90ff;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+    }
+    .main {
+      max-width: 800px;
+      margin: auto;
+      padding: 2rem;
+      background: white;
+    }
+    label, select, input, button {
+      display: block;
+      margin-bottom: 1rem;
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 4px;
+    }
+    button {
+      background: #1e90ff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0d6efd;
+    }
+    .score-panel {
+      margin-top: 2rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 1rem;
+      background: #f9f9f9;
+    }
+    .log {
+      margin-top: 1rem;
+      font-family: monospace;
+    }
+    .btn-group button {
+      width: auto;
+      margin-right: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
   </style>
 </head>
 <body>
@@ -13,15 +61,29 @@
     <h1>🏏 Cricket Adda - Live Scoring</h1>
   </header>
   <div class="main">
-    <h2>Select Match</h2>
-    <div id="matchDetails"></div>
+    <h2>Live Match</h2>
 
-    <!-- Same input and scoring section as before -->
+    <label for="overs">Overs:</label>
+    <input type="number" id="overs" disabled />
 
     <div class="score-panel">
       <h3 id="scoreTitle">Innings 1 - <span id="battingTeam"></span> Batting</h3>
       <p id="scoreDisplay">0/0 (0.0)</p>
-      <!-- Buttons for updating score -->
+      <div class="btn-group">
+        <button onclick="updateScore(0)">Dot</button>
+        <button onclick="updateScore(1)">1</button>
+        <button onclick="updateScore(2)">2</button>
+        <button onclick="updateScore(3)">3</button>
+        <button onclick="updateScore(4)">4</button>
+        <button onclick="updateScore(6)">6</button>
+        <button onclick="wicket()">Wicket</button>
+        <button onclick="extra('Wide')">Wide</button>
+        <button onclick="extra('No Ball')">No Ball</button>
+      </div>
+      <div class="log" id="ballLog"></div>
+      <button onclick="switchInnings()">Switch Innings</button>
+      <button onclick="saveMatch()">Save Match</button>
+      <button onclick="resetMatch()">Reset Match</button>
     </div>
   </div>
   <footer>
@@ -29,18 +91,106 @@
   </footer>
 
   <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const matchId = urlParams.get('matchId');
+    let innings = 1;
+    let runs = 0;
+    let wickets = 0;
+    let balls = 0;
+    let oversLimit = 0;
+    let log = [];
+    let matchSummary = [];
 
-    if (matchId) {
-      const matchData = JSON.parse(localStorage.getItem(matchId));
-      if (matchData) {
-        document.getElementById('matchDetails').innerHTML = `<p>Match: ${matchId}</p>`;
-        // Load match data, e.g., batting team, score, and continue scoring
-        // Code for starting/resuming the match based on matchData
-      }
+    const tournamentData = JSON.parse(localStorage.getItem('cricketAddaTournament'));
+    const selectedMatch = localStorage.getItem('selectedMatch');
+    const battingTeam = document.getElementById('battingTeam');
+
+    if (tournamentData && selectedMatch) {
+      const teams = tournamentData.teams;
+      document.getElementById('overs').value = tournamentData.overs;
+      oversLimit = parseInt(tournamentData.overs);
+      battingTeam.textContent = teams[0];
     } else {
-      alert("No match selected");
+      alert("No tournament data found. Please start from the tournament page.");
+    }
+
+    function updateScore(run) {
+      if (isInningsComplete()) return;
+      runs += run;
+      balls++;
+      log.push(run);
+      updateDisplay();
+    }
+
+    function wicket() {
+      if (isInningsComplete()) return;
+      wickets++;
+      balls++;
+      log.push('W');
+      updateDisplay();
+    }
+
+    function extra(type) {
+      runs++;
+      log.push(type === 'Wide' ? 'Wd' : 'Nb');
+      updateDisplay();
+    }
+
+    function updateDisplay() {
+      const overs = Math.floor(balls / 6) + '.' + (balls % 6);
+      document.getElementById('scoreDisplay').textContent = `${runs}/${wickets} (${overs})`;
+      document.getElementById('ballLog').textContent = `Log: ${log.join(', ')}`;
+    }
+
+    function isInningsComplete() {
+      return balls >= oversLimit * 6 || wickets >= tournamentData.playersPerTeam - 1;
+    }
+
+    function switchInnings() {
+      if (!isInningsComplete()) {
+        alert("Complete the innings before switching.");
+        return;
+      }
+      matchSummary.push({
+        innings: innings,
+        team: tournamentData.teams[innings - 1],
+        runs,
+        wickets,
+        log: [...log]
+      });
+      innings++;
+      runs = 0;
+      wickets = 0;
+      balls = 0;
+      log = [];
+      document.getElementById('scoreTitle').textContent = `Innings ${innings} - ${tournamentData.teams[1]} Batting`;
+      battingTeam.textContent = tournamentData.teams[1];
+      updateDisplay();
+    }
+
+    function saveMatch() {
+      matchSummary.push({
+        innings: innings,
+        team: battingTeam.textContent,
+        runs,
+        wickets,
+        log: [...log]
+      });
+      const key = `match_${selectedMatch}_${Date.now()}`;
+      localStorage.setItem(key, JSON.stringify(matchSummary));
+      alert("Match saved as " + key);
+    }
+
+    function resetMatch() {
+      if (confirm("Reset entire match data?")) {
+        innings = 1;
+        runs = 0;
+        wickets = 0;
+        balls = 0;
+        log = [];
+        matchSummary = [];
+        updateDisplay();
+        document.getElementById('scoreTitle').textContent = `Innings 1 - ${tournamentData.teams[0]} Batting`;
+        battingTeam.textContent = tournamentData.teams[0];
+      }
     }
   </script>
 </body>
