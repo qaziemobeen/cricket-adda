@@ -107,24 +107,31 @@
     function updateTeams() {
       const totalTeams = parseInt(document.getElementById("totalTeams").value);
       teams = [];
+      teamPlayers = {};
+
       for (let i = 1; i <= totalTeams; i++) {
-        teams.push(`Team ${String.fromCharCode(64 + i)}`);
-        teamPlayers[`Team ${String.fromCharCode(64 + i)}`] = [];
+        const teamName = `Team ${String.fromCharCode(64 + i)}`;
+        teams.push(teamName);
+        teamPlayers[teamName] = [];
       }
+
       renderTeams();
     }
 
     // Update players per team
     function updatePlayers() {
       const playersPerTeam = parseInt(document.getElementById("playersPerTeam").value);
-      for (let team in teamPlayers) {
+
+      // Update each team with the required number of players
+      teams.forEach((team) => {
         while (teamPlayers[team].length < playersPerTeam) {
           teamPlayers[team].push('');
         }
         while (teamPlayers[team].length > playersPerTeam) {
           teamPlayers[team].pop();
         }
-      }
+      });
+
       renderTeams();
     }
 
@@ -136,10 +143,10 @@
       teams.forEach((team, index) => {
         const div = document.createElement("div");
         div.innerHTML = `
-          <strong>${team}</strong>
+          <strong>Team ${String.fromCharCode(65 + index)}: </strong>
+          <input type="text" id="teamName_${team}" value="${team}" oninput="editTeamName('${team}')">
+          
           <div>
-            <label for="teamName_${team}">Team Name:</label>
-            <input type="text" id="teamName_${team}" value="${team}" oninput="editTeamName('${team}')">
             <label>Players:</label>
             <div id="players_${team}">
               ${teamPlayers[team].map((player, i) => `
