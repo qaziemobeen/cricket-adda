@@ -2,206 +2,121 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cricket Adda - Tournament Setup</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tournament Setup</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      background: linear-gradient(to right, #e0f7fa, #ffffff);
-      animation: fadeIn 1s ease-in;
+      font-family: Arial, sans-serif;
+      background: #f4faff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
     }
-    header, footer {
-      background: #1e90ff;
-      color: white;
-      text-align: center;
-      padding: 1rem;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    }
-    .main {
-      max-width: 800px;
-      margin: 2rem auto;
-      padding: 2rem;
+    .container {
       background: white;
-      border-radius: 10px;
+      padding: 30px;
+      border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      animation: slideIn 0.8s ease-out;
+      max-width: 800px;
+      width: 100%;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      margin: 10px 0;
+    }
+    .column {
+      flex: 1;
+      padding: 10px;
     }
     label {
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      display: block;
+      font-weight: bold;
     }
-    input, button {
-      padding: 0.6rem;
-      margin-bottom: 1rem;
+    input {
       width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      margin-bottom: 10px;
       border-radius: 5px;
       border: 1px solid #ccc;
-      box-sizing: border-box;
+    }
+    .players {
+      display: flex;
+      justify-content: space-between;
+    }
+    .team {
+      width: 48%;
+    }
+    .team h3 {
+      text-align: center;
     }
     button {
-      background: #1e90ff;
+      display: block;
+      margin: 20px auto 0;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #007bff;
       color: white;
       border: none;
-      transition: all 0.3s ease;
+      border-radius: 6px;
+      cursor: pointer;
     }
     button:hover {
-      background: #0d6efd;
-      transform: scale(1.03);
-    }
-    .team-list {
-      margin-top: 1rem;
-    }
-    .team-list div {
-      background: #f1f9ff;
-      padding: 0.5rem;
-      margin-bottom: 0.5rem;
-      border-radius: 5px;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    @keyframes slideIn {
-      from { transform: translateY(20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
+      background-color: #0056b3;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>🏏 Cricket Adda - Tournament Setup</h1>
-  </header>
-  <div class="main">
-    <label for="tournamentName">Tournament Name:</label>
-    <input type="text" id="tournamentName" placeholder="Enter Tournament Name" />
+  <div class="container">
+    <h1>"Tournament Name"</h1>
+    
+    <div class="row">
+      <div class="column">
+        <label>Date</label>
+        <input type="date" value="2025-05-11" />
+      </div>
+      <div class="column">
+        <label>Overs</label>
+        <input type="number" value="5" min="1" />
+      </div>
+    </div>
 
-    <label for="tournamentDate">Tournament Start Date:</label>
-    <input type="date" id="tournamentDate" />
+    <div class="row">
+      <div class="column">
+        <label>Total Teams</label>
+        <input type="number" value="2" min="2" />
+      </div>
+      <div class="column">
+        <label>Players in each team</label>
+        <input type="number" value="5" min="1" />
+      </div>
+    </div>
 
-    <label for="playersPerTeam">Players per Team:</label>
-    <input type="number" id="playersPerTeam" value="11" min="1" />
+    <div class="players">
+      <div class="team">
+        <h3>Team A</h3>
+        <input type="text" placeholder="Player A" />
+        <input type="text" placeholder="Player B" />
+        <input type="text" placeholder="Player C" />
+        <input type="text" placeholder="Player D" />
+        <input type="text" placeholder="Player E" />
+      </div>
+      <div class="team">
+        <h3>Team B</h3>
+        <input type="text" placeholder="Player 1" />
+        <input type="text" placeholder="Player 2" />
+        <input type="text" placeholder="Player 3" />
+        <input type="text" placeholder="Player 4" />
+        <input type="text" placeholder="Player 5" />
+      </div>
+    </div>
 
-    <label for="overs">Overs per Match:</label>
-    <input type="number" id="overs" value="5" min="1" />
-
-    <label for="teamName">Add Team:</label>
-    <input type="text" id="teamName" placeholder="Enter Team Name" />
-    <button onclick="addTeam()">Add Team</button>
-
-    <div class="team-list" id="teamList"></div>
-
-    <button onclick="saveTournament()">Generate Schedule</button>
-
-    <!-- This is where tournament details will be displayed -->
-    <div id="savedTournamentDetails"></div>
+    <button>Generate Schedule</button>
   </div>
-  <footer>
-    <p>&copy; 2025 Cricket Adda</p>
-  </footer>
-  <script>
-    const teams = [];
-    const teamPlayers = {};
-
-    // Add a new team
-    function addTeam() {
-      const teamName = document.getElementById("teamName").value.trim();
-      if (teamName && !teams.includes(teamName)) {
-        teams.push(teamName);
-        teamPlayers[teamName] = [];
-        renderTeams();
-        document.getElementById("teamName").value = "";
-      }
-    }
-
-    // Render teams list
-    function renderTeams() {
-      const teamList = document.getElementById("teamList");
-      teamList.innerHTML = "";
-      teams.forEach((team, index) => {
-        const div = document.createElement("div");
-        div.innerHTML = `
-          <strong>${index + 1}. ${team}</strong>
-          <div>
-            <label>Players:</label>
-            <input type="text" id="player_${team}" placeholder="Enter Player Name" />
-            <button onclick="addPlayer('${team}')">Add Player</button>
-            <ul id="players_${team}"></ul>
-          </div>
-        `;
-        div.style.animation = "slideIn 0.3s ease-out";
-        teamList.appendChild(div);
-      });
-    }
-
-    // Add player to a team
-    function addPlayer(team) {
-      const playerName = document.getElementById(`player_${team}`).value.trim();
-      const maxPlayers = parseInt(document.getElementById("playersPerTeam").value);
-
-      // Add player if name is not empty and the team has fewer than the max players
-      if (playerName && !teamPlayers[team].includes(playerName) && teamPlayers[team].length < maxPlayers) {
-        teamPlayers[team].push(playerName);
-        renderPlayers(team);
-        document.getElementById(`player_${team}`).value = "";
-      } else if (teamPlayers[team].length >= maxPlayers) {
-        alert(`Maximum of ${maxPlayers} players are allowed for team ${team}.`);
-      }
-    }
-
-    // Render player names for each team
-    function renderPlayers(team) {
-      const playerList = document.getElementById(`players_${team}`);
-      playerList.innerHTML = "";
-      teamPlayers[team].forEach(player => {
-        const li = document.createElement("li");
-        li.textContent = player;
-        playerList.appendChild(li);
-      });
-    }
-
-    // Save tournament data
-    function saveTournament() {
-      const name = document.getElementById("tournamentName").value.trim();
-      const date = document.getElementById("tournamentDate").value;
-      const playersPerTeam = parseInt(document.getElementById("playersPerTeam").value);
-      const overs = parseInt(document.getElementById("overs").value);
-
-      const data = {
-        name,
-        date,
-        playersPerTeam,
-        overs,
-        teams,
-        teamPlayers
-      };
-
-      // Save to localStorage
-      localStorage.setItem("cricketAddaTournament", JSON.stringify(data));
-
-      // Display the saved data in a readable format on the page
-      const savedData = JSON.parse(localStorage.getItem("cricketAddaTournament"));
-
-      const displayData = `
-        <h3>Tournament Details:</h3>
-        <p><strong>Tournament Name:</strong> ${savedData.name}</p>
-        <p><strong>Tournament Date:</strong> ${savedData.date}</p>
-        <p><strong>Players per Team:</strong> ${savedData.playersPerTeam}</p>
-        <p><strong>Overs per Match:</strong> ${savedData.overs}</p>
-        <h4>Teams:</h4>
-        ${savedData.teams.map(team => `
-          <p>Team: ${team}</p>
-          <ul>
-            ${savedData.teamPlayers[team].map(player => `<li>${player}</li>`).join('')}
-          </ul>
-        `).join('')}
-      `;
-      document.getElementById("savedTournamentDetails").innerHTML = displayData;
-
-      // Redirect to scoring page
-      window.location.href = "score.html";
-    }
-  </script>
 </body>
 </html>
