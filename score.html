@@ -3,205 +3,103 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cricket Adda - Tournament Setup</title>
+  <title>Cricket Adda - Drawing Board</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: Arial, sans-serif;
+      background-color: #f7f7f7;
       margin: 0;
-      background: linear-gradient(to right, #e0f7fa, #ffffff);
-      animation: fadeIn 1s ease-in;
+      padding: 20px;
     }
-    header, footer {
-      background: #1e90ff;
-      color: white;
+    h1 {
       text-align: center;
-      padding: 1rem;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      color: #1e90ff;
     }
-    .main {
-      max-width: 800px;
-      margin: 2rem auto;
-      padding: 2rem;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      animation: slideIn 0.8s ease-out;
-    }
-    label {
-      font-weight: 600;
-      margin-bottom: 0.5rem;
+    #drawingCanvas {
+      border: 2px solid #1e90ff;
+      background-color: white;
       display: block;
+      margin: 0 auto;
     }
-    input, button {
-      padding: 0.6rem;
-      margin-bottom: 1rem;
-      width: 100%;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
+    .tools {
+      text-align: center;
+      margin-top: 20px;
     }
     button {
-      background: #1e90ff;
+      padding: 10px 20px;
+      margin: 0 10px;
+      background-color: #1e90ff;
       color: white;
       border: none;
-      transition: all 0.3s ease;
+      cursor: pointer;
     }
     button:hover {
-      background: #0d6efd;
-      transform: scale(1.03);
-    }
-    .team-list {
-      margin-top: 1rem;
-    }
-    .team-list div {
-      background: #f1f9ff;
-      padding: 0.5rem;
-      margin-bottom: 0.5rem;
-      border-radius: 5px;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    @keyframes slideIn {
-      from { transform: translateY(20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
+      background-color: #0d6efd;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>🏏 Cricket Adda - Tournament Setup</h1>
-  </header>
-  <div class="main">
-    <label for="tournamentName">Tournament Name:</label>
-    <input type="text" id="tournamentName" placeholder="Enter Tournament Name" />
+  <h1>🏏 Cricket Adda - Drawing Board</h1>
 
-    <label for="tournamentDate">Tournament Start Date:</label>
-    <input type="date" id="tournamentDate" />
+  <canvas id="drawingCanvas" width="600" height="400"></canvas>
 
-    <label for="playersPerTeam">Players per Team:</label>
-    <input type="number" id="playersPerTeam" value="11" min="1" />
-
-    <label for="overs">Overs per Match:</label>
-    <input type="number" id="overs" value="5" min="1" />
-
-    <label for="teamName">Add Team:</label>
-    <input type="text" id="teamName" placeholder="Enter Team Name" />
-    <button onclick="addTeam()">Add Team</button>
-
-    <div class="team-list" id="teamList"></div>
-
-    <button onclick="saveTournament()">Generate Schedule</button>
-
-    <!-- This is where tournament details will be displayed -->
-    <div id="savedTournamentDetails"></div>
+  <div class="tools">
+    <button onclick="clearCanvas()">Clear</button>
+    <button onclick="saveDrawing()">Save Drawing</button>
   </div>
-  <footer>
-    <p>&copy; 2025 Cricket Adda</p>
-  </footer>
+
   <script>
-    const teams = [];
-    const teamPlayers = {};
+    // Access the canvas and context
+    const canvas = document.getElementById('drawingCanvas');
+    const ctx = canvas.getContext('2d');
 
-    // Add a new team
-    function addTeam() {
-      const teamName = document.getElementById("teamName").value.trim();
-      if (teamName && !teams.includes(teamName)) {
-        teams.push(teamName);
-        teamPlayers[teamName] = [];
-        renderTeams();
-        document.getElementById("teamName").value = "";
-      }
+    // Initialize drawing state
+    let isDrawing = false;
+
+    // Function to start drawing
+    function startDrawing(event) {
+      isDrawing = true;
+      draw(event); // Call draw to ensure the line starts from the current position
     }
 
-    // Render teams list
-    function renderTeams() {
-      const teamList = document.getElementById("teamList");
-      teamList.innerHTML = "";
-      teams.forEach((team, index) => {
-        const div = document.createElement("div");
-        div.innerHTML = `
-          <strong>${index + 1}. ${team}</strong>
-          <div>
-            <label>Players:</label>
-            <input type="text" id="player_${team}" placeholder="Enter Player Name" />
-            <button onclick="addPlayer('${team}')">Add Player</button>
-            <ul id="players_${team}"></ul>
-          </div>
-        `;
-        div.style.animation = "slideIn 0.3s ease-out";
-        teamList.appendChild(div);
-      });
+    // Function to draw on the canvas
+    function draw(event) {
+      if (!isDrawing) return;
+      
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = '#1e90ff'; // Color of the line
+
+      // Draw from last position to the current mouse position
+      ctx.lineTo(event.clientX - canvas.offsetLeft, event.clientY - canvas.offsetTop);
+      ctx.stroke();
     }
 
-    // Add player to a team
-    function addPlayer(team) {
-      const playerName = document.getElementById(`player_${team}`).value.trim();
-      const maxPlayers = parseInt(document.getElementById("playersPerTeam").value);
-
-      // Add player if name is not empty and the team has fewer than the max players
-      if (playerName && !teamPlayers[team].includes(playerName) && teamPlayers[team].length < maxPlayers) {
-        teamPlayers[team].push(playerName);
-        renderPlayers(team);
-        document.getElementById(`player_${team}`).value = "";
-      } else if (teamPlayers[team].length >= maxPlayers) {
-        alert(`Maximum of ${maxPlayers} players are allowed for team ${team}.`);
-      }
+    // Function to stop drawing
+    function stopDrawing() {
+      isDrawing = false;
+      ctx.beginPath(); // Start a new path for future drawing
     }
 
-    // Render player names for each team
-    function renderPlayers(team) {
-      const playerList = document.getElementById(`players_${team}`);
-      playerList.innerHTML = "";
-      teamPlayers[team].forEach(player => {
-        const li = document.createElement("li");
-        li.textContent = player;
-        playerList.appendChild(li);
-      });
+    // Function to clear the canvas
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
-    // Save tournament data
-    function saveTournament() {
-      const name = document.getElementById("tournamentName").value.trim();
-      const date = document.getElementById("tournamentDate").value;
-      const playersPerTeam = parseInt(document.getElementById("playersPerTeam").value);
-      const overs = parseInt(document.getElementById("overs").value);
-
-      const data = {
-        name,
-        date,
-        playersPerTeam,
-        overs,
-        teams,
-        teamPlayers
-      };
-
-      // Save to localStorage
-      localStorage.setItem("cricketAddaTournament", JSON.stringify(data));
-
-      // Display the saved data in a readable format on the page
-      const savedData = JSON.parse(localStorage.getItem("cricketAddaTournament"));
-
-      const displayData = `
-        <h3>Tournament Details:</h3>
-        <p><strong>Tournament Name:</strong> ${savedData.name}</p>
-        <p><strong>Tournament Date:</strong> ${savedData.date}</p>
-        <p><strong>Players per Team:</strong> ${savedData.playersPerTeam}</p>
-        <p><strong>Overs per Match:</strong> ${savedData.overs}</p>
-        <h4>Teams:</h4>
-        ${savedData.teams.map(team => `
-          <p>Team: ${team}</p>
-          <ul>
-            ${savedData.teamPlayers[team].map(player => `<li>${player}</li>`).join('')}
-          </ul>
-        `).join('')}
-      `;
-      document.getElementById("savedTournamentDetails").innerHTML = displayData;
-
-      // Redirect to scoring page
-      window.location.href = "score.html";
+    // Function to save the drawing
+    function saveDrawing() {
+      const dataURL = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.href = dataURL;
+      link.download = 'drawing.png';
+      link.click();
     }
+
+    // Event listeners for drawing actions
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
   </script>
 </body>
 </html>
