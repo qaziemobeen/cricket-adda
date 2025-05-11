@@ -50,25 +50,14 @@
       background: #0d6efd;
       transform: scale(1.03);
     }
-    .team-section {
+    .team-list {
       margin-top: 1rem;
     }
-    .team {
-      margin-bottom: 1rem;
-      padding: 1rem;
-      border: 1px solid #ccc;
+    .team-list div {
+      background: #f1f9ff;
+      padding: 0.5rem;
+      margin-bottom: 0.5rem;
       border-radius: 5px;
-      background-color: #f9f9f9;
-    }
-    .player-list {
-      margin-top: 1rem;
-    }
-    .player-input {
-      margin-bottom: 0.5rem;
-    }
-    .team-name {
-      font-weight: 700;
-      margin-bottom: 0.5rem;
     }
     @keyframes fadeIn {
       from { opacity: 0; }
@@ -85,117 +74,92 @@
     <h1>🏏 Cricket Adda - Tournament Setup</h1>
   </header>
   <div class="main">
-    <!-- Tournament Name -->
     <label for="tournamentName">Tournament Name:</label>
     <input type="text" id="tournamentName" placeholder="Enter Tournament Name" />
 
-    <!-- Tournament Date -->
     <label for="tournamentDate">Tournament Start Date:</label>
     <input type="date" id="tournamentDate" />
 
-    <!-- Number of Overs -->
+    <label for="playersPerTeam">Players per Team:</label>
+    <input type="number" id="playersPerTeam" value="11" min="1" />
+
     <label for="overs">Overs per Match:</label>
     <input type="number" id="overs" value="5" min="1" />
 
-    <!-- Number of Teams -->
-    <label for="numTeams">Number of Teams:</label>
-    <input type="number" id="numTeams" value="2" min="2" onchange="generateTeamFields()" />
+    <label for="teamName">Add Team:</label>
+    <input type="text" id="teamName" placeholder="Enter Team Name" />
+    <button onclick="addTeam()">Add Team</button>
 
-    <!-- Number of Players per Team -->
-    <label for="playersPerTeam">Players per Team:</label>
-    <input type="number" id="playersPerTeam" value="11" min="1" onchange="generatePlayerFields()" />
-
-    <!-- Team and Players Section -->
-    <div id="teamSection" class="team-section"></div>
+    <div class="team-list" id="teamList"></div>
 
     <button onclick="saveTournament()">Generate Schedule</button>
+
+    <!-- This is where tournament details will be displayed -->
+    <div id="savedTournamentDetails"></div>
   </div>
   <footer>
     <p>&copy; 2025 Cricket Adda</p>
   </footer>
   <script>
-    let teamCount = 2;
-    let playerCount = 11;
+    const teams = [];
 
-    // Generate fields for teams and players based on input
-    function generateTeamFields() {
-      teamCount = parseInt(document.getElementById("numTeams").value);
-      generatePlayerFields();
-    }
-
-    function generatePlayerFields() {
-      playerCount = parseInt(document.getElementById("playersPerTeam").value);
-      const teamSection = document.getElementById("teamSection");
-      teamSection.innerHTML = '';  // Clear previous content
-
-      // Create team fields dynamically based on number of teams
-      for (let i = 0; i < teamCount; i++) {
-        const teamDiv = document.createElement("div");
-        teamDiv.classList.add("team");
-
-        const teamNameLabel = document.createElement("label");
-        teamNameLabel.classList.add("team-name");
-        teamNameLabel.textContent = `Team ${i + 1} Name:`;
-        teamDiv.appendChild(teamNameLabel);
-
-        const teamNameInput = document.createElement("input");
-        teamNameInput.type = "text";
-        teamNameInput.placeholder = `Enter Team ${i + 1} Name`;
-        teamDiv.appendChild(teamNameInput);
-
-        // Create player input fields
-        const playerListDiv = document.createElement("div");
-        playerListDiv.classList.add("player-list");
-
-        for (let j = 0; j < playerCount; j++) {
-          const playerInputDiv = document.createElement("div");
-          const playerLabel = document.createElement("label");
-          playerLabel.textContent = `Player ${j + 1}:`;
-          playerInputDiv.appendChild(playerLabel);
-
-          const playerInput = document.createElement("input");
-          playerInput.type = "text";
-          playerInput.placeholder = `Enter Player ${j + 1} Name`;
-          playerInputDiv.classList.add("player-input");
-          playerInputDiv.appendChild(playerInput);
-
-          playerListDiv.appendChild(playerInputDiv);
-        }
-
-        teamDiv.appendChild(playerListDiv);
-        teamSection.appendChild(teamDiv);
+    function addTeam() {
+      const teamName = document.getElementById("teamName").value.trim();
+      if (teamName && !teams.includes(teamName)) {
+        teams.push(teamName);
+        renderTeams();
+        document.getElementById("teamName").value = "";
       }
     }
 
-    // Save tournament details
-    function saveTournament() {
-      const tournamentName = document.getElementById("tournamentName").value.trim();
-      const tournamentDate = document.getElementById("tournamentDate").value;
-      const overs = parseInt(document.getElementById("overs").value);
-
-      const teamsData = [];
-      const teamDivs = document.querySelectorAll(".team");
-      teamDivs.forEach((teamDiv, index) => {
-        const teamName = teamDiv.querySelector("input[type='text']").value.trim();
-        const players = [];
-        const playerInputs = teamDiv.querySelectorAll(".player-input input");
-        playerInputs.forEach(input => players.push(input.value.trim()));
-
-        teamsData.push({
-          teamName,
-          players
-        });
+    function renderTeams() {
+      const teamList = document.getElementById("teamList");
+      teamList.innerHTML = "";
+      teams.forEach((team, index) => {
+        const div = document.createElement("div");
+        div.textContent = `${index + 1}. ${team}`;
+        div.style.animation = "slideIn 0.3s ease-out";
+        teamList.appendChild(div);
       });
+    }
 
-      const tournamentData = {
-        tournamentName,
-        tournamentDate,
+    function saveTournament() {
+      const name = document.getElementById("tournamentName").value.trim();
+      const date = document.getElementById("tournamentDate").value;
+      const playersPerTeam = parseInt(document.getElementById("playersPerTeam").value);
+      const overs = parseInt(document.getElementById("overs").value);
+      
+      const data = {
+        name,
+        date,
+        playersPerTeam,
         overs,
-        teams: teamsData
+        teams
       };
+      
+      // Save to localStorage
+      localStorage.setItem("cricketAddaTournament", JSON.stringify(data));
 
-      localStorage.setItem("cricketAddaTournament", JSON.stringify(tournamentData));
-      window.location.href = "score.html";  // Redirect to scoring page
+      // Display the saved data in a readable format on the page
+      const savedData = JSON.parse(localStorage.getItem("cricketAddaTournament"));
+      
+      const displayData = `
+        <h3>Tournament Details:</h3>
+        <p><strong>Tournament Name:</strong> ${savedData.name}</p>
+        <p><strong>Tournament Date:</strong> ${savedData.date}</p>
+        <p><strong>Players per Team:</strong> ${savedData.playersPerTeam}</p>
+        <p><strong>Overs per Match:</strong> ${savedData.overs}</p>
+        <h4>Teams:</h4>
+        ${savedData.teams.map(team => `
+          <p>Team: ${team}</p>
+        `).join('')}
+      `;
+
+      // Show the saved data on the page
+      document.getElementById("savedTournamentDetails").innerHTML = displayData;
+      
+      // Redirect to scoring page
+      window.location.href = "score.html";
     }
   </script>
 </body>
