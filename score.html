@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cricket Adda - Live Scoring</title>
+  <style>
+    /* Same styling as before */
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🏏 Cricket Adda - Live Scoring</h1>
+  </header>
+  <div class="main">
+    <h2>Select Match</h2>
+    <div id="matchDetails"></div>
+
+    <!-- Same input and scoring section as before -->
+
+    <div class="score-panel">
+      <h3 id="scoreTitle">Innings 1 - <span id="battingTeam"></span> Batting</h3>
+      <p id="scoreDisplay">0/0 (0.0)</p>
+      <!-- Buttons for updating score -->
+    </div>
+  </div>
+  <footer>
+    <p>&copy; 2025 Cricket Adda</p>
+  </footer>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const matchId = urlParams.get('matchId');
+
+    if (matchId) {
+      const matchData = JSON.parse(localStorage.getItem(matchId));
+      if (matchData) {
+        document.getElementById('matchDetails').innerHTML = `<p>Match: ${matchId}</p>`;
+        // Load match data, e.g., batting team, score, and continue scoring
+        // Code for starting/resuming the match based on matchData
+      }
+    } else {
+      alert("No match selected");
+    }
+  </script>
+</body>
+</html>
