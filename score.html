@@ -61,7 +61,15 @@
     <h1>🏏 Cricket Adda - Live Scoring</h1>
   </header>
   <div class="main">
-    <h2>Live Match</h2>
+    <h2>Select Match</h2>
+    <label for="matchSelect">Match:</label>
+    <select id="matchSelect"></select>
+
+    <label for="toss">Toss Won By:</label>
+    <select id="toss"></select>
+
+    <label for="batFirst">Chose to Bat First:</label>
+    <select id="batFirst"></select>
 
     <label for="overs">Overs:</label>
     <input type="number" id="overs" disabled />
@@ -84,11 +92,15 @@
       <button onclick="switchInnings()">Switch Innings</button>
       <button onclick="saveMatch()">Save Match</button>
       <button onclick="resetMatch()">Reset Match</button>
+      <button onclick="generatePDFReport()">Generate Match Report</button>
     </div>
   </div>
   <footer>
     <p>&copy; 2025 Cricket Adda</p>
   </footer>
+
+  <!-- Include jsPDF library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <script>
     let innings = 1;
@@ -100,17 +112,36 @@
     let matchSummary = [];
 
     const tournamentData = JSON.parse(localStorage.getItem('cricketAddaTournament'));
-    const selectedMatch = localStorage.getItem('selectedMatch');
+    const matchSelect = document.getElementById('matchSelect');
+    const toss = document.getElementById('toss');
+    const batFirst = document.getElementById('batFirst');
     const battingTeam = document.getElementById('battingTeam');
 
-    if (tournamentData && selectedMatch) {
-      const teams = tournamentData.teams;
+    if (tournamentData) {
+      tournamentData.teams.forEach((teamA, i) => {
+        for (let j = i + 1; j < tournamentData.teams.length; j++) {
+          const option = document.createElement('option');
+          const teamB = tournamentData.teams[j];
+          option.value = `${teamA} vs ${teamB}`;
+          option.textContent = `${teamA} vs ${teamB}`;
+          matchSelect.appendChild(option);
+        }
+      });
+      [toss, batFirst].forEach(select => {
+        tournamentData.teams.forEach(team => {
+          const opt = document.createElement('option');
+          opt.value = team;
+          opt.textContent = team;
+          select.appendChild(opt);
+        });
+      });
       document.getElementById('overs').value = tournamentData.overs;
       oversLimit = parseInt(tournamentData.overs);
-      battingTeam.textContent = teams[0];
-    } else {
-      alert("No tournament data found. Please start from the tournament page.");
     }
+
+    matchSelect.addEventListener('change', () => {
+      battingTeam.textContent = batFirst.value;
+    });
 
     function updateScore(run) {
       if (isInningsComplete()) return;
@@ -151,7 +182,7 @@
       }
       matchSummary.push({
         innings: innings,
-        team: tournamentData.teams[innings - 1],
+        team: innings === 1 ? batFirst.value : toss.value === batFirst.value ? tournamentData.teams.find(t => t !== batFirst.value) : batFirst.value,
         runs,
         wickets,
         log: [...log]
@@ -161,8 +192,8 @@
       wickets = 0;
       balls = 0;
       log = [];
-      document.getElementById('scoreTitle').textContent = `Innings ${innings} - ${tournamentData.teams[1]} Batting`;
-      battingTeam.textContent = tournamentData.teams[1];
+      document.getElementById('scoreTitle').textContent = `Innings ${innings} - ${innings === 2 ? (toss.value === batFirst.value ? tournamentData.teams.find(t => t !== batFirst.value) : batFirst.value) : batFirst.value} Batting`;
+      battingTeam.textContent = innings === 2 ? (toss.value === batFirst.value ? tournamentData.teams.find(t => t !== batFirst.value) : batFirst.value) : batFirst.value;
       updateDisplay();
     }
 
@@ -174,7 +205,7 @@
         wickets,
         log: [...log]
       });
-      const key = `match_${selectedMatch}_${Date.now()}`;
+      const key = `match_${matchSelect.value}_${Date.now()}`;
       localStorage.setItem(key, JSON.stringify(matchSummary));
       alert("Match saved as " + key);
     }
@@ -188,9 +219,23 @@
         log = [];
         matchSummary = [];
         updateDisplay();
-        document.getElementById('scoreTitle').textContent = `Innings 1 - ${tournamentData.teams[0]} Batting`;
-        battingTeam.textContent = tournamentData.teams[0];
+        document.getElementById('scoreTitle').textContent = `Innings 1 - ${batFirst.value} Batting`;
+        battingTeam.textContent = batFirst.value;
       }
+    }
+
+    function generatePDFReport() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.text("Cricket Adda - Match Report", 20, 10);
+      doc.text("-------------------------------------------------", 20, 20);
+      doc.text(`Match: ${matchSelect.value}`, 20, 30);
+      doc.text(`Batting Team: ${battingTeam.textContent}`, 20, 40);
+      doc.text(`Score: ${runs}/${wickets} (${Math.floor(balls / 6)}.${balls % 6} overs)`, 20, 50);
+      doc.text(`Ball Log: ${log.join(', ')}`, 20, 60);
+
+      doc.save("Match_Report.pdf");
     }
   </script>
 </body>
