@@ -102,11 +102,13 @@
   </footer>
   <script>
     const teams = [];
+    const teamPlayers = {};
 
     function addTeam() {
       const teamName = document.getElementById("teamName").value.trim();
       if (teamName && !teams.includes(teamName)) {
         teams.push(teamName);
+        teamPlayers[teamName] = [];
         renderTeams();
         document.getElementById("teamName").value = "";
       }
@@ -117,9 +119,36 @@
       teamList.innerHTML = "";
       teams.forEach((team, index) => {
         const div = document.createElement("div");
-        div.textContent = `${index + 1}. ${team}`;
+        div.innerHTML = `
+          <strong>${index + 1}. ${team}</strong>
+          <div>
+            <label>Players:</label>
+            <input type="text" id="player_${team}" placeholder="Enter Player Name" />
+            <button onclick="addPlayer('${team}')">Add Player</button>
+            <ul id="players_${team}"></ul>
+          </div>
+        `;
         div.style.animation = "slideIn 0.3s ease-out";
         teamList.appendChild(div);
+      });
+    }
+
+    function addPlayer(team) {
+      const playerName = document.getElementById(`player_${team}`).value.trim();
+      if (playerName && !teamPlayers[team].includes(playerName)) {
+        teamPlayers[team].push(playerName);
+        renderPlayers(team);
+        document.getElementById(`player_${team}`).value = "";
+      }
+    }
+
+    function renderPlayers(team) {
+      const playerList = document.getElementById(`players_${team}`);
+      playerList.innerHTML = "";
+      teamPlayers[team].forEach(player => {
+        const li = document.createElement("li");
+        li.textContent = player;
+        playerList.appendChild(li);
       });
     }
 
@@ -134,7 +163,8 @@
         date,
         playersPerTeam,
         overs,
-        teams
+        teams,
+        teamPlayers
       };
       
       // Save to localStorage
@@ -152,10 +182,11 @@
         <h4>Teams:</h4>
         ${savedData.teams.map(team => `
           <p>Team: ${team}</p>
+          <ul>
+            ${savedData.teamPlayers[team].map(player => `<li>${player}</li>`).join('')}
+          </ul>
         `).join('')}
       `;
-
-      // Show the saved data on the page
       document.getElementById("savedTournamentDetails").innerHTML = displayData;
 
       // Redirect to scoring page
