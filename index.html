@@ -135,10 +135,15 @@
 
     function addPlayer(team) {
       const playerName = document.getElementById(`player_${team}`).value.trim();
-      if (playerName && !teamPlayers[team].includes(playerName)) {
+      const maxPlayers = parseInt(document.getElementById("playersPerTeam").value);
+
+      // Add player if name is not empty and the team has fewer than the max players
+      if (playerName && !teamPlayers[team].includes(playerName) && teamPlayers[team].length < maxPlayers) {
         teamPlayers[team].push(playerName);
         renderPlayers(team);
         document.getElementById(`player_${team}`).value = "";
+      } else if (teamPlayers[team].length >= maxPlayers) {
+        alert(`Maximum of ${maxPlayers} players are allowed for team ${team}.`);
       }
     }
 
