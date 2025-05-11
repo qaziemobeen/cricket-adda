@@ -1,244 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cricket Adda - Live Scoring</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cricket Adda - Scoring Page</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      background: #f0f0f0;
-    }
-    header, footer {
-      background: #1e90ff;
-      color: white;
-      text-align: center;
-      padding: 1rem;
-    }
-    .main {
-      max-width: 800px;
-      margin: auto;
+      font-family: 'Segoe UI', sans-serif;
       padding: 2rem;
-      background: white;
+      background-color: #f9f9f9;
     }
-    label, select, input, button {
-      display: block;
-      margin-bottom: 1rem;
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    table {
       width: 100%;
-      padding: 0.5rem;
-      border-radius: 4px;
+      border-collapse: collapse;
+      margin-bottom: 2rem;
     }
-    button {
-      background: #1e90ff;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #0d6efd;
-    }
-    .score-panel {
-      margin-top: 2rem;
+    th, td {
       border: 1px solid #ccc;
-      border-radius: 6px;
-      padding: 1rem;
-      background: #f9f9f9;
+      padding: 8px;
+      text-align: center;
     }
-    .log {
-      margin-top: 1rem;
-      font-family: monospace;
+    th {
+      background-color: #1e90ff;
+      color: white;
     }
-    .btn-group button {
-      width: auto;
-      margin-right: 0.5rem;
-      margin-bottom: 0.5rem;
+    .section-title {
+      background-color: #e0e0e0;
+      font-weight: bold;
+    }
+    .highlight {
+      background-color: yellow;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>🏏 Cricket Adda - Live Scoring</h1>
-  </header>
-  <div class="main">
-    <h2>Select Match</h2>
-    <label for="matchSelect">Match:</label>
-    <select id="matchSelect"></select>
+  <h1>"Tournament Name"</h1>
 
-    <label for="toss">Toss Won By:</label>
-    <select id="toss"></select>
+  <table>
+    <tr>
+      <td>Match</td><td>Team A Vs Team B</td>
+      <td>Toss</td><td>Team A won the toss</td>
+    </tr>
+    <tr>
+      <td>Overs</td><td>5</td>
+      <td>Elected to</td><td>Bat First</td>
+    </tr>
+  </table>
 
-    <label for="batFirst">Chose to Bat First:</label>
-    <select id="batFirst"></select>
+  <h2>Innings 1</h2>
+  <table>
+    <tr><th colspan="5">Batting - Team A</th><th colspan="2">Score</th></tr>
+    <tr><th>Player</th><th>Runs</th><th>Balls</th><th>Strike Rate</th><th>Bowled By</th><th>Runs</th><th>Wickets</th></tr>
+    <tr><td>Player A</td><td></td><td></td><td></td><td></td><td rowspan="5">24</td><td rowspan="5">5</td></tr>
+    <tr><td>Player B</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>Player C</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>Player D</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>Player E</td><td></td><td></td><td></td><td></td></tr>
+  </table>
 
-    <label for="overs">Overs:</label>
-    <input type="number" id="overs" disabled />
+  <table>
+    <tr><th colspan="5">Bowling - Team B</th></tr>
+    <tr><th>Player</th><th>Overs</th><th>Runs</th><th>Wickets</th><th>Econ</th></tr>
+    <tr><td>Player 1</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>Player 2</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>Player 3</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>Player 4</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>Player 5</td><td></td><td></td><td></td><td></td></tr>
+  </table>
 
-    <div class="score-panel">
-      <h3 id="scoreTitle">Innings 1 - <span id="battingTeam"></span> Batting</h3>
-      <p id="scoreDisplay">0/0 (0.0)</p>
-      <p id="runsRequired">Runs Required: N/A</p> <!-- Runs Required for second innings -->
-      <p id="ballsRemaining">Balls Remaining: N/A</p> <!-- Balls remaining for second innings -->
-      <div class="btn-group">
-        <button onclick="updateScore(0)">Dot</button>
-        <button onclick="updateScore(1)">1</button>
-        <button onclick="updateScore(2)">2</button>
-        <button onclick="updateScore(3)">3</button>
-        <button onclick="updateScore(4)">4</button>
-        <button onclick="updateScore(6)">6</button>
-        <button onclick="wicket()">Wicket</button>
-        <button onclick="extra('Wide')">Wide</button>
-        <button onclick="extra('No Ball')">No Ball</button>
-      </div>
-      <div class="log" id="ballLog"></div>
-      <button onclick="switchInnings()">Switch Innings</button>
-      <button onclick="saveMatch()">Save Match</button>
-      <button onclick="resetMatch()">Reset Match</button>
-    </div>
-  </div>
-  <footer>
-    <p>&copy; 2025 Cricket Adda</p>
-  </footer>
+  <table>
+    <tr><th colspan="9">Ball-by-Ball</th></tr>
+    <tr><th></th><th>1st</th><th>2nd</th><th>3rd</th><th>4th</th><th>5th</th><th>6th</th><th>7th</th><th>8th</th></tr>
+    <tr><td>1st Over</td><td>1</td><td>.</td><td>6</td><td class="highlight">1+wd</td><td class="highlight">6+nb</td><td>5</td><td>1</td><td>2</td></tr>
+    <tr><td>2nd Over</td><td>1</td><td>2</td><td>1</td><td>3</td><td>1</td><td>2</td><td></td><td></td></tr>
+  </table>
 
-  <script>
-    let innings = 1;
-    let runs = 0;
-    let wickets = 0;
-    let balls = 0;
-    let oversLimit = 0;
-    let log = [];
-    let matchSummary = [];
-    let firstInningsRuns = 0; // Store the score of the first innings for the target
-    let targetScore = 0; // Runs required for second innings
-    let ballsRemaining = 0; // Balls remaining for second innings
+  <h2>Innings 2</h2>
+  <table>
+    <tr><th colspan="5">Batting - Team B</th><th colspan="2">Score</th></tr>
+    <tr><th>Player</th><th>Runs</th><th>Balls</th><th>Strike Rate</th><th>Bowled By</th><th>Runs</th><th>Wickets</th></tr>
+    <tr><td>Player 1</td><td></td><td></td><td></td><td></td><td rowspan="5"></td><td rowspan="5"></td></tr>
+    <tr><td>Player 2</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>Player 3</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>Player 4</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>Player 5</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td colspan="5"></td><td>Runs Required</td><td></td></tr>
+    <tr><td colspan="5"></td><td>Balls Remaining</td><td></td></tr>
+    <tr><td colspan="5"></td><td>Wickets in Hand</td><td></td></tr>
+  </table>
 
-    const tournamentData = JSON.parse(localStorage.getItem('cricketAddaTournament'));
-    const matchSelect = document.getElementById('matchSelect');
-    const toss = document.getElementById('toss');
-    const batFirst = document.getElementById('batFirst');
-    const battingTeam = document.getElementById('battingTeam');
-
-    if (tournamentData) {
-      tournamentData.teams.forEach((teamA, i) => {
-        for (let j = i + 1; j < tournamentData.teams.length; j++) {
-          const option = document.createElement('option');
-          const teamB = tournamentData.teams[j];
-          option.value = `${teamA} vs ${teamB}`;
-          option.textContent = `${teamA} vs ${teamB}`;
-          matchSelect.appendChild(option);
-        }
-      });
-      [toss, batFirst].forEach(select => {
-        tournamentData.teams.forEach(team => {
-          const opt = document.createElement('option');
-          opt.value = team;
-          opt.textContent = team;
-          select.appendChild(opt);
-        });
-      });
-      document.getElementById('overs').value = tournamentData.overs;
-      oversLimit = parseInt(tournamentData.overs);
-    }
-
-    matchSelect.addEventListener('change', () => {
-      battingTeam.textContent = batFirst.value;
-      resetMatch();
-    });
-
-    function updateScore(run) {
-      if (isInningsComplete()) return;
-      runs += run;
-      balls++;
-      log.push(run);
-      updateDisplay();
-    }
-
-    function wicket() {
-      if (isInningsComplete()) return;
-      wickets++;
-      balls++;
-      log.push('W');
-      updateDisplay();
-    }
-
-    function extra(type) {
-      runs++;
-      log.push(type === 'Wide' ? 'Wd' : 'Nb');
-      updateDisplay();
-    }
-
-    function updateDisplay() {
-      const overs = Math.floor(balls / 6) + '.' + (balls % 6);
-      document.getElementById('scoreDisplay').textContent = `${runs}/${wickets} (${overs})`;
-      document.getElementById('ballLog').textContent = `Log: ${log.join(', ')}`;
-      if (innings === 2) {
-        const runsRequired = targetScore - runs;
-        document.getElementById('runsRequired').textContent = `Runs Required: ${runsRequired}`;
-        ballsRemaining = (oversLimit * 6) - balls;
-        document.getElementById('ballsRemaining').textContent = `Balls Remaining: ${ballsRemaining}`;
-      }
-    }
-
-    function isInningsComplete() {
-      return balls >= oversLimit * 6 || wickets >= tournamentData.playersPerTeam - 1;
-    }
-
-    function switchInnings() {
-      if (!isInningsComplete()) {
-        alert("Complete the innings before switching.");
-        return;
-      }
-      matchSummary.push({
-        innings: innings,
-        team: innings === 1 ? batFirst.value : toss.value === batFirst.value ? tournamentData.teams.find(t => t !== batFirst.value) : batFirst.value,
-        runs,
-        wickets,
-        log: [...log]
-      });
-
-      if (innings === 1) {
-        firstInningsRuns = runs;
-        targetScore = firstInningsRuns + 1; // Set target score for second innings
-        document.getElementById('runsRequired').textContent = `Runs Required: ${targetScore}`;
-        ballsRemaining = oversLimit * 6; // Full overs for second innings
-        document.getElementById('ballsRemaining').textContent = `Balls Remaining: ${ballsRemaining}`;
-      }
-
-      innings++;
-      runs = 0;
-      wickets = 0;
-      balls = 0;
-      log = [];
-      document.getElementById('scoreTitle').textContent = `Innings ${innings} - ${innings === 2 ? (toss.value === batFirst.value ? tournamentData.teams.find(t => t !== batFirst.value) : batFirst.value) : batFirst.value} Batting`;
-      battingTeam.textContent = innings === 2 ? (toss.value === batFirst.value ? tournamentData.teams.find(t => t !== batFirst.value) : batFirst.value) : batFirst.value;
-      updateDisplay();
-    }
-
-    function saveMatch() {
-      matchSummary.push({
-        innings: innings,
-        team: battingTeam.textContent,
-        runs,
-        wickets,
-        log: [...log]
-      });
-      const key = `match_${matchSelect.value}_${Date.now()}`;
-      localStorage.setItem(key, JSON.stringify(matchSummary));
-      alert("Match saved as " + key);
-    }
-
-    function resetMatch() {
-      innings = 1;
-      runs = 0;
-      wickets = 0;
-      balls = 0;
-      log = [];
-      matchSummary = [];
-      updateDisplay();
-      document.getElementById('scoreTitle').textContent = `Innings 1 - ${batFirst.value} Batting`;
-      document.getElementById('runsRequired').textContent = `Runs Required: N/A`;
-      document.getElementById('ballsRemaining').textContent = `Balls Remaining: N/A`;
-    }
-  </script>
+  <table>
+    <tr><th colspan="5">Bowling - Team A</th></tr>
+    <tr><th>Player</th><th>Overs</th><th>Runs</th><th>Wickets</th><th>Econ</th></tr>
+    <tr><td>Player A</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>Player B</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>Player C</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>Player D</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>Player E</td><td></td><td></td><td></td><td></td></tr>
+  </table>
 </body>
 </html>
