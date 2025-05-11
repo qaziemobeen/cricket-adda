@@ -104,6 +104,7 @@
     const teams = [];
     const teamPlayers = {};
 
+    // Add a new team
     function addTeam() {
       const teamName = document.getElementById("teamName").value.trim();
       if (teamName && !teams.includes(teamName)) {
@@ -114,6 +115,7 @@
       }
     }
 
+    // Render teams list
     function renderTeams() {
       const teamList = document.getElementById("teamList");
       teamList.innerHTML = "";
@@ -133,6 +135,7 @@
       });
     }
 
+    // Add player to a team
     function addPlayer(team) {
       const playerName = document.getElementById(`player_${team}`).value.trim();
       const maxPlayers = parseInt(document.getElementById("playersPerTeam").value);
@@ -147,6 +150,7 @@
       }
     }
 
+    // Render player names for each team
     function renderPlayers(team) {
       const playerList = document.getElementById(`players_${team}`);
       playerList.innerHTML = "";
@@ -157,12 +161,13 @@
       });
     }
 
+    // Save tournament data
     function saveTournament() {
       const name = document.getElementById("tournamentName").value.trim();
       const date = document.getElementById("tournamentDate").value;
       const playersPerTeam = parseInt(document.getElementById("playersPerTeam").value);
       const overs = parseInt(document.getElementById("overs").value);
-      
+
       const data = {
         name,
         date,
@@ -171,13 +176,13 @@
         teams,
         teamPlayers
       };
-      
+
       // Save to localStorage
       localStorage.setItem("cricketAddaTournament", JSON.stringify(data));
 
       // Display the saved data in a readable format on the page
       const savedData = JSON.parse(localStorage.getItem("cricketAddaTournament"));
-      
+
       const displayData = `
         <h3>Tournament Details:</h3>
         <p><strong>Tournament Name:</strong> ${savedData.name}</p>
