@@ -70,78 +70,78 @@
   <div id="schedule-container" class="schedule"></div>
 </div>
 
-<script src="script.js"></script>
+<script>
+  let teamsData = [];
+  let schedule = [];
+
+  function generateTeams() {
+    const numTeams = document.getElementById('teams').value;
+    const numPlayers = document.getElementById('players').value;
+    const teamsContainer = document.getElementById('teams-container');
+    teamsContainer.innerHTML = ''; // Clear previous teams
+    
+    if (numTeams < 2 || numPlayers < 1) {
+      alert('Please provide valid team and player counts');
+      return;
+    }
+
+    teamsData = []; // Reset teams data
+    for (let i = 1; i <= numTeams; i++) {
+      let teamName = `Team ${i}`;
+      let players = [];
+      for (let j = 1; j <= numPlayers; j++) {
+        players.push(`Player ${j}`);
+      }
+      teamsData.push({ teamName, players });
+
+      const teamDiv = document.createElement('div');
+      teamDiv.classList.add('team');
+      teamDiv.innerHTML = `<h3>${teamName}</h3><ul>${players.map(player => `<li>${player}</li>`).join('')}</ul>`;
+      teamsContainer.appendChild(teamDiv);
+    }
+  }
+
+  function generateSchedule() {
+    const teamsContainer = document.getElementById('schedule-container');
+    teamsContainer.innerHTML = ''; // Clear previous schedule
+    
+    if (teamsData.length < 2) {
+      alert('Please generate teams first');
+      return;
+    }
+
+    schedule = []; // Reset schedule
+    let matchCount = 1;
+    for (let i = 0; i < teamsData.length; i++) {
+      for (let j = i + 1; j < teamsData.length; j++) {
+        const match = {
+          matchNo: matchCount++,
+          team1: teamsData[i].teamName,
+          team2: teamsData[j].teamName,
+          status: 'Scheduled'
+        };
+        schedule.push(match);
+
+        const matchDiv = document.createElement('div');
+        matchDiv.classList.add('match');
+        matchDiv.innerHTML = `
+          <p>Match ${match.matchNo}: ${match.team1} vs ${match.team2} - Status: ${match.status}</p>
+          <button onclick="startMatch(${match.matchNo})">Start Match</button>
+        `;
+        teamsContainer.appendChild(matchDiv);
+      }
+    }
+  }
+
+  function startMatch(matchNo) {
+    const match = schedule.find(m => m.matchNo === matchNo);
+    if (match) {
+      match.status = 'Ongoing';
+      alert(`Starting match ${matchNo}: ${match.team1} vs ${match.team2}`);
+      // Redirect to Score Update page or open a modal here.
+    }
+  }
+</script>
+
 </body>
 </html>
-// script.js
-
-let teamsData = [];
-let schedule = [];
-
-function generateTeams() {
-  const numTeams = document.getElementById('teams').value;
-  const numPlayers = document.getElementById('players').value;
-  const teamsContainer = document.getElementById('teams-container');
-  teamsContainer.innerHTML = ''; // Clear previous teams
-  
-  if (numTeams < 2 || numPlayers < 1) {
-    alert('Please provide valid team and player counts');
-    return;
-  }
-
-  teamsData = []; // Reset teams data
-  for (let i = 1; i <= numTeams; i++) {
-    let teamName = `Team ${i}`;
-    let players = [];
-    for (let j = 1; j <= numPlayers; j++) {
-      players.push(`Player ${j}`);
-    }
-    teamsData.push({ teamName, players });
-
-    const teamDiv = document.createElement('div');
-    teamDiv.classList.add('team');
-    teamDiv.innerHTML = `<h3>${teamName}</h3><ul>${players.map(player => `<li>${player}</li>`).join('')}</ul>`;
-    teamsContainer.appendChild(teamDiv);
-  }
-}
-
-function generateSchedule() {
-  const teamsContainer = document.getElementById('schedule-container');
-  teamsContainer.innerHTML = ''; // Clear previous schedule
-  
-  if (teamsData.length < 2) {
-    alert('Please generate teams first');
-    return;
-  }
-
-  schedule = []; // Reset schedule
-  let matchCount = 1;
-  for (let i = 0; i < teamsData.length; i++) {
-    for (let j = i + 1; j < teamsData.length; j++) {
-      const match = {
-        matchNo: matchCount++,
-        team1: teamsData[i].teamName,
-        team2: teamsData[j].teamName,
-        status: 'Scheduled'
-      };
-      schedule.push(match);
-
-      const matchDiv = document.createElement('div');
-      matchDiv.classList.add('match');
-      matchDiv.innerHTML = `
-        <p>Match ${match.matchNo}: ${match.team1} vs ${match.team2} - Status: ${match.status}</p>
-        <button onclick="startMatch(${match.matchNo})">Start Match</button>
-      `;
-      teamsContainer.appendChild(matchDiv);
-    }
-  }
-}
-
-function startMatch(matchNo) {
-  const match = schedule.find(m => m.matchNo === matchNo);
-  if (match) {
-    match.status = 'Ongoing';
-    alert(`Starting match ${matchNo}: ${match.team1} vs ${match.team2}`);
-    // Redirect to Score Update page or open a modal here.
-  }
-}
